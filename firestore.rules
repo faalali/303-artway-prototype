@@ -1,0 +1,188 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Auth helpers ──────────────────────────────────────────────────────────
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      // SECURITY: admin status comes ONLY from the custom auth claim, which can
+      // only be set server-side (e.g. via a Cloud Function using the Admin SDK).
+      // We also trust request.auth.token.email == 'faal@eazy.media' for the primary developer/admin account.
+      return isAuthenticated() && (request.auth.token.admin == true || request.auth.token.email == 'faal@eazy.media');
+    }
+
+    // ── Schema helpers ────────────────────────────────────────────────────────
+
+    function hasRequiredFields(data, fields) {
+      return data.keys().hasAll(fields);
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches('.+@.+\\..+');
+    }
+
+    // ── Users ─────────────────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      // New user docs cannot self-assign a role/admin field.
+      allow create: if request.auth.uid == userId
+        && !('role' in request.resource.data)
+        && !('isAdmin' in request.resource.data)
+        && !('admin' in request.resource.data);
+      // Existing user docs: owner can edit their own doc but never touch
+      // role/admin fields — those are server-managed (e.g. synced from
+      // custom claims via a Cloud Function). Admins can edit anything.
+      allow update: if isAdmin() || (
+        request.auth.uid == userId
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isAdmin', 'admin'])
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ── Artist Registry Submissions ────────────────────────────────────────────
+    // submissions_registry/{docId}
+    // Any authenticated user (including anonymous) or guest can create their own record.
+    // Only admins can read, update, delete.
+
+    match /submissions_registry/{docId} {
+      allow create: if (request.resource.data.submitterUid == 'anonymous' || (isAuthenticated() && request.resource.data.submitterUid == request.auth.uid))
+        && hasRequiredFields(request.resource.data, ['firstName', 'lastName', 'email', 'formType'])
+        && isValidEmail(request.resource.data.email)
+        && request.resource.data.formType == 'REGISTRY';
+
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ── Intake Submissions ────────────────────────────────────────────────────
+    // submissions_intake/{docId}
+
+    match /submissions_intake/{docId} {
+      allow create: if (request.resource.data.submitterUid == 'anonymous' || (isAuthenticated() && request.resource.data.submitterUid == request.auth.uid))
+        && request.resource.data.formType == 'INTAKE';
+
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ── Art & Need Submissions ────────────────────────────────────────────────
+    // submissions_artNeeds/{docId}
+
+    match /submissions_artNeeds/{docId} {
+      allow create: if (request.resource.data.submitterUid == 'anonymous' || (isAuthenticated() && request.resource.data.submitterUid == request.auth.uid))
+        && request.resource.data.formType == 'ART_NEED';
+
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ── Sync Queue ────────────────────────────────────────────────────────────
+    // sync_queue/{jobId}   jobId = uid + timestamp
+    // Cloud Function reads/updates. Admin can read for monitoring.
+    // Public authenticated or guest users can only create (enqueue their own jobs).
+
+    match /sync_queue/{jobId} {
+      allow create: if (isAuthenticated() || request.auth == null)
+        && hasRequiredFields(request.resource.data, ['payload', 'targetSheet', 'status', 'attempts', 'createdAt', 'nextRetryAt'])
+        && request.resource.data.status == 'pending'
+        && request.resource.data.attempts == 0;
+
+      // Cloud Function uses Admin SDK (bypasses rules). Admin dashboard can monitor.
+      allow read:   if isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    match /artists/{artistId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated()
+        && request.resource.data.submitterUid == request.auth.uid
+        && request.resource.data.vettingStatus == 'New';
+      allow update: if isAuthenticated() && (
+        resource.data.submitterUid == request.auth.uid || isAdmin()
+      ) && (
+        isAdmin() ||
+        !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['vettingStatus', 'lastContacted', 'vettingNotes'])
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ── Opportunities ─────────────────────────────────────────────────────────
+
+    match /opportunities/{oppId} {
+      allow read:              if isAdmin();
+      allow create:            if isAuthenticated()
+        && request.resource.data.submitterUid == request.auth.uid;
+      allow update, delete:    if isAdmin();
+    }
+
+    // ── Admin collections ─────────────────────────────────────────────────────
+
+    match /projects/{projectId}        { allow read: if isAuthenticated(); allow write: if isAdmin(); }
+    match /funding_sources/{sourceId}  { allow read: if isAuthenticated(); allow write: if isAdmin(); }
+    match /admin_logs/{logId}          { allow read, write: if isAdmin(); }
+    match /global_configs/{configId}   { allow read: if isAuthenticated(); allow write: if isAdmin(); }
+
+    match /crmContacts/{contactId} {
+      allow read, write: if isAuthenticated() && (
+        isAdmin() || 
+        (resource == null || resource.data.ownerId == request.auth.uid) && 
+        (request.resource == null || request.resource.data.ownerId == request.auth.uid)
+      );
+    }
+
+    // ── Enterprise Sync Platform Collections ──────────────────────────────────
+
+    match /submissions/{docId} {
+      // Previously `allow create: if true` with no validation — an open,
+      // unauthenticated write sink (spam / storage-cost abuse vector).
+      // Now requires the same shape as the other submissions_* collections.
+      allow create: if (request.resource.data.submitterUid == 'anonymous'
+          || (isAuthenticated() && request.resource.data.submitterUid == request.auth.uid))
+        && hasRequiredFields(request.resource.data, ['firstName', 'lastName', 'email', 'formType'])
+        && isValidEmail(request.resource.data.email);
+      allow read: if isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    match /dead_letter_queue/{docId} {
+      allow read: if isAdmin();
+      allow write: if false; // Pushed exclusively via Admin Cloud Functions
+    }
+
+    match /audit_logs/{docId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated(); // Allow client logger
+      allow update, delete: if false;
+    }
+
+    match /debug_logs/{docId} {
+      // Previously `create: if true` — open to unauthenticated writes.
+      // Require auth at minimum; legitimate client-side logging happens
+      // from within the signed-in app anyway.
+      allow create: if isAuthenticated();
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /alerts/{docId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated(); // Allow client-side alert reporting
+      allow update, delete: if false;
+    }
+
+    match /analytics/{docId} {
+      // Previously `create: if true` — open, unauthenticated write target.
+      // If you specifically need to capture pre-login/anonymous analytics
+      // events, don't revert this to `if true` — instead route those events
+      // through a Cloud Function (HTTPS callable) that does basic rate
+      // limiting/validation server-side before writing with the Admin SDK.
+      allow create: if isAuthenticated();
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /review_workflows/{docId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

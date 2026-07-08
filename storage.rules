@@ -1,0 +1,50 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Core authentication checks
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Support administrative scope checking
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.admin == true
+      );
+    }
+
+    // Secure paths segregated by user ID for work examples and portfolios
+    match /users/{userId}/{allPaths=**} {
+      // Access to documents is restricted to profile owner and team administrators
+      allow read: if isOwner(userId) || isAdmin();
+      
+      // Writes must strictly respect file constraints and owner validation
+      allow write: if (isOwner(userId) && validateUploadConstraints()) || isAdmin();
+    }
+
+    // Main validation check encapsulating file sizes and MIME types
+    function validateUploadConstraints() {
+      return validateFileSize() && validateFileMimeType();
+    }
+
+    // Limit files strictly to 3.5 MB (3.5 * 1024 * 1024 = 3,670,016 bytes)
+    function validateFileSize() {
+      return request.resource.size <= 3670016;
+    }
+
+    // Restrict file types only to images (JPEG/PNG), audio (MP3/MPEG), video (MP4), and documents (PDF)
+    function validateFileMimeType() {
+      return request.resource.contentType.matches('image/jpeg')
+        || request.resource.contentType.matches('image/png')
+        || request.resource.contentType.matches('video/mp4')
+        || request.resource.contentType.matches('audio/mp3')
+        || request.resource.contentType.matches('audio/mpeg')
+        || request.resource.contentType.matches('application/pdf');
+    }
+  }
+}
