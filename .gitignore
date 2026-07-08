@@ -28,3 +28,7 @@ dist-ssr
 .env.*
 !.env.example
 
+# Large media files
+public/crush_2020.mp4
+public/ila_database_video.mov
+
