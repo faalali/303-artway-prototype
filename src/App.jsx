@@ -341,8 +341,8 @@ function PublicPortal({ onAdminToggle }) {
 
 // ── Main App ──────────────────────────────────────────────────────────────────
 function App() {
+  const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
   const [isAdminRoute, setIsAdminRoute] = useState(() => {
-    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
     return params.get('admin') !== null || params.get('dev') === 'true';
   });
   const isBeta       = params.get('beta') === 'true'  || params.get('dev') === 'true';
