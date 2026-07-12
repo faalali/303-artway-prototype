@@ -376,76 +376,129 @@ export default function CRMManager() {
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Try broadening your search keywords or resetting filters.</p>
         </div>
       ) : (
-        <div style={{ overflowX: 'auto', background: 'var(--bg-panel)', borderRadius: '16px', border: '1px solid var(--border-subtle)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '700px' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-subtle)', background: 'rgba(0, 0, 0, 0.15)' }}>
-                <th style={{ padding: '1.25rem 1.5rem', fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 600 }}>Name</th>
-                <th style={{ padding: '1.25rem 1.5rem', fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 600 }}>Company</th>
-                <th style={{ padding: '1.25rem 1.5rem', fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 600 }}>Type</th>
-                <th style={{ padding: '1.25rem 1.5rem', fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 600 }}>Status</th>
-                <th style={{ padding: '1.25rem 1.5rem', fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 600 }}>Priority</th>
-                <th style={{ padding: '1.25rem 1.5rem', fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 600 }}>Follow Up</th>
-                <th style={{ padding: '1.25rem 1.5rem', fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: 600, textAlign: 'right' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredContacts.map((contact) => (
-                <tr 
-                  key={contact.id} 
-                  onClick={() => setSelectedContact(contact)}
-                  style={{ 
-                    borderBottom: '1px solid var(--border-subtle)', 
-                    cursor: 'pointer',
-                    transition: 'background 0.2s ease',
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                >
-                  <td style={{ padding: '1.25rem 1.5rem' }}>
-                    <div style={{ fontWeight: 600, color: 'white' }}>{contact.name}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '2px' }}>{contact.email || 'No email'}</div>
-                  </td>
-                  <td style={{ padding: '1.25rem 1.5rem', color: 'white' }}>{contact.company || '—'}</td>
-                  <td style={{ padding: '1.25rem 1.5rem', textTransform: 'capitalize', color: 'var(--text-secondary)', fontWeight: 500 }}>{contact.type}</td>
-                  <td style={{ padding: '1.25rem 1.5rem' }}>
-                    <span className={`vetting-badge ${getStatusBadgeClass(contact.status)}`}>
-                      {contact.status}
-                    </span>
-                  </td>
-                  <td style={{ padding: '1.25rem 1.5rem' }}>
-                    <span className={`vetting-badge ${getPriorityBadgeClass(contact.priority)}`}>
-                      {contact.priority}
-                    </span>
-                  </td>
-                  <td style={{ padding: '1.25rem 1.5rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
-                    {contact.nextFollowUpDate || '—'}
-                  </td>
-                  <td style={{ padding: '1.25rem 1.5rem', textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
-                    <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
-                      <button 
-                        className="btn-secondary" 
-                        style={{ padding: '0.4rem 0.6rem', minHeight: 'unset', display: 'flex', alignItems: 'center' }}
-                        onClick={() => handleEditClick(contact)}
-                        title="Edit Contact"
-                      >
-                        <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>edit</span>
-                      </button>
-                      <button 
-                        className="btn-secondary" 
-                        style={{ padding: '0.4rem 0.6rem', minHeight: 'unset', display: 'flex', alignItems: 'center', background: 'rgba(239, 68, 68, 0.05)', borderColor: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}
-                        onClick={() => handleDelete(contact.id)}
-                        title="Delete Contact"
-                      >
-                        <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>delete</span>
-                      </button>
-                    </div>
-                  </td>
+        <>
+          {/* Desktop Table View */}
+          <div className="crm-table-desktop-wrapper">
+            <table className="crm-table-desktop">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Company</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Priority</th>
+                  <th>Follow Up</th>
+                  <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filteredContacts.map((contact) => (
+                  <tr 
+                    key={contact.id} 
+                    onClick={() => setSelectedContact(contact)}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <td>
+                      <div className="crm-name-cell">{contact.name}</div>
+                      <div className="crm-email-cell">{contact.email || 'No email'}</div>
+                    </td>
+                    <td>{contact.company || '—'}</td>
+                    <td style={{ textTransform: 'capitalize' }}>{contact.type}</td>
+                    <td>
+                      <span className={`vetting-badge ${getStatusBadgeClass(contact.status)}`}>
+                        {contact.status}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`vetting-badge ${getPriorityBadgeClass(contact.priority)}`}>
+                        {contact.priority}
+                      </span>
+                    </td>
+                    <td style={{ fontFamily: 'monospace' }}>
+                      {contact.nextFollowUpDate || '—'}
+                    </td>
+                    <td style={{ textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
+                      <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+                        <button 
+                          className="btn-secondary" 
+                          style={{ padding: '0.4rem 0.6rem', minHeight: 'unset', display: 'flex', alignItems: 'center' }}
+                          onClick={() => handleEditClick(contact)}
+                          title="Edit Contact"
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>edit</span>
+                        </button>
+                        <button 
+                          className="btn-secondary" 
+                          style={{ padding: '0.4rem 0.6rem', minHeight: 'unset', display: 'flex', alignItems: 'center', background: 'rgba(239, 68, 68, 0.05)', borderColor: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}
+                          onClick={() => handleDelete(contact.id)}
+                          title="Delete Contact"
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card Grid View */}
+          <div className="crm-cards-mobile">
+            {filteredContacts.map((contact) => (
+              <div 
+                key={contact.id} 
+                className="crm-mobile-card" 
+                onClick={() => setSelectedContact(contact)}
+              >
+                <div className="crm-card-header">
+                  <div>
+                    <div className="crm-card-name">{contact.name}</div>
+                    <div className="crm-card-email">{contact.email || 'No email'}</div>
+                  </div>
+                  <span className={`vetting-badge ${getStatusBadgeClass(contact.status)}`}>
+                    {contact.status}
+                  </span>
+                </div>
+                
+                <div className="crm-card-details">
+                  <div className="crm-card-detail-item">
+                    <span className="material-symbols-outlined">business</span>
+                    <span>{contact.company || '—'}</span>
+                  </div>
+                  <div className="crm-card-detail-item">
+                    <span className="material-symbols-outlined">history</span>
+                    <span>{contact.nextFollowUpDate ? `Follow-up: ${contact.nextFollowUpDate}` : 'No follow-up'}</span>
+                  </div>
+                </div>
+
+                <div className="crm-card-footer" onClick={(e) => e.stopPropagation()}>
+                  <span className={`vetting-badge ${getPriorityBadgeClass(contact.priority)}`}>
+                    {contact.priority}
+                  </span>
+                  
+                  <div style={{ display: 'inline-flex', gap: '0.5rem' }}>
+                    <button 
+                      className="btn-secondary" 
+                      style={{ padding: '0.4rem 0.6rem', minHeight: 'unset', display: 'flex', alignItems: 'center' }}
+                      onClick={() => handleEditClick(contact)}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>edit</span>
+                    </button>
+                    <button 
+                      className="btn-secondary" 
+                      style={{ padding: '0.4rem 0.6rem', minHeight: 'unset', display: 'flex', alignItems: 'center', background: 'rgba(239, 68, 68, 0.05)', borderColor: 'rgba(239, 68, 68, 0.15)', color: '#f87171' }}
+                      onClick={() => handleDelete(contact.id)}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '1.1rem' }}>delete</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Slide-out Detailed Contact Drawer */}
