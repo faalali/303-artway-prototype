@@ -58,7 +58,7 @@ const PROCESS_CARDS = [
   },
 ];
 
-export default function HubHomepage({ onNavigate }) {
+export default function HubHomepage({ onNavigate, onAdminToggle }) {
   const [activeHomepageTab, setActiveHomepageTab] = useState(() => {
     const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
     const tabParam = params.get('tab');
@@ -1113,6 +1113,25 @@ export default function HubHomepage({ onNavigate }) {
           </span>
         ))}
       </footer>
+
+      {onAdminToggle && (
+        <div style={{ textAlign: 'center', padding: '1rem 0 2.5rem', borderTop: '1px solid rgba(255,255,255,0.03)' }}>
+          <button 
+            type="button"
+            onClick={onAdminToggle}
+            style={{
+              background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', 
+              fontSize: '0.72rem', cursor: 'pointer', fontFamily: "'Outfit', sans-serif",
+              letterSpacing: '0.08em', textTransform: 'uppercase', transition: 'color 0.2s',
+              outline: 'none', padding: '0.5rem 1rem'
+            }}
+            onMouseEnter={(e) => e.target.style.color = '#fff'}
+            onMouseLeave={(e) => e.target.style.color = 'rgba(255,255,255,0.25)'}
+          >
+            Staff Portal / Admin Access
+          </button>
+        </div>
+      )}
 
       <style>{`
         .hub-shell {

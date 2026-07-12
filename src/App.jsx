@@ -207,7 +207,7 @@ function AdminLoginGate({ onSuccess }) {
 }
 
 // ── Public Entryway Segmented Role Portal ─────────────────────────────────────
-function PublicPortal() {
+function PublicPortal({ onAdminToggle }) {
   const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
   const [view, setView] = useState(() => {
     const roleParam = params.get('role');
@@ -239,7 +239,7 @@ function PublicPortal() {
 
   // Show the split-screen homepage
   if (view === 'home') {
-    return <HubHomepage onNavigate={handleNavigate} />;
+    return <HubHomepage onNavigate={handleNavigate} onAdminToggle={onAdminToggle} />;
   }
 
   // Show the chosen portal form with a back button in the header
@@ -341,12 +341,16 @@ function PublicPortal() {
 
 // ── Main App ──────────────────────────────────────────────────────────────────
 function App() {
-  const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
-  const isAdminRoute = params.get('admin') !== null || params.get('dev') === 'true';
+  const [isAdminRoute, setIsAdminRoute] = useState(() => {
+    const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+    return params.get('admin') !== null || params.get('dev') === 'true';
+  });
   const isBeta       = params.get('beta') === 'true'  || params.get('dev') === 'true';
 
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    if (!isAdminRoute) return false;
+    const paramsInit = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+    const isAdmin = paramsInit.get('admin') !== null || paramsInit.get('dev') === 'true';
+    if (!isAdmin) return false;
     return sessionStorage.getItem(SESSION_KEY) === '1';
   });
 
@@ -747,7 +751,7 @@ function App() {
 
   // ── PUBLIC DEFAULT: show both intake forms ───────────────────────────────
   if (!isAdminRoute) {
-    return <PublicPortal />;
+    return <PublicPortal onAdminToggle={() => setIsAdminRoute(true)} />;
   }
 
   // ── ADMIN ROUTE but not authenticated: show login gate ───────────────────
