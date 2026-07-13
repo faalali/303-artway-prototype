@@ -761,7 +761,7 @@ Formulate a concise 2-3 sentence analysis of logistical opportunities, zoning de
   }, [mapLoaded, isDenverZoom, showCreativeTrail]);
 
   return (
-    <div style={{
+    <div className="project-map-container" style={{
       display: 'grid',
       gridTemplateColumns: '320px 1fr',
       gap: '1.5rem',
@@ -787,7 +787,7 @@ Formulate a concise 2-3 sentence analysis of logistical opportunities, zoning de
       `}</style>
 
       {/* 1. Sidebar Panel */}
-      <div style={{
+      <div className="project-map-sidebar" style={{
         background: 'rgba(10, 11, 16, 0.45)',
         borderRight: '1px solid var(--border-subtle)',
         display: 'flex',
@@ -1023,9 +1023,9 @@ Formulate a concise 2-3 sentence analysis of logistical opportunities, zoning de
       </div>
 
       {/* 2. Map Canvas Block */}
-      <div style={{ position: 'relative', height: '100%', overflow: 'hidden', background: '#08090c' }}>
+      <div className="project-map-canvas-wrapper" style={{ position: 'relative', height: '100%', overflow: 'hidden', background: '#08090c' }}>
         {/* Title Overlay */}
-        <div style={{
+        <div className="map-title-overlay" style={{
           position: 'absolute', top: '1.25rem', left: '1.25rem', zIndex: 10,
           background: 'rgba(8, 9, 12, 0.75)', padding: '0.65rem 1rem', borderRadius: '10px',
           border: '1px solid rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(12px)',
@@ -1044,7 +1044,7 @@ Formulate a concise 2-3 sentence analysis of logistical opportunities, zoning de
 
         {/* Dynamic Warning Alert Overlay for API Key missing (Glassmorphic) */}
         {mapLoaded && (!import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.VITE_GOOGLE_MAPS_API_KEY === 'YOUR_API_KEY_HERE') && (
-          <div style={{
+          <div className="map-sandbox-warning" style={{
             position: 'absolute', top: '1.25rem', left: '50%', transform: 'translateX(-50%)', zIndex: 10,
             background: 'rgba(235, 166, 90, 0.12)', border: '1px solid rgba(235, 166, 90, 0.3)',
             borderRadius: '8px', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -1061,6 +1061,7 @@ Formulate a concise 2-3 sentence analysis of logistical opportunities, zoning de
         {/* Back Button (Only in Denver Zoom) */}
         {isDenverZoom && (
           <button
+            className="map-back-btn"
             onClick={() => { setIsDenverZoom(false); setSelectedItem(null); }}
             style={{
               position: 'absolute',
@@ -1174,7 +1175,7 @@ Formulate a concise 2-3 sentence analysis of logistical opportunities, zoning de
         )}
 
         {/* Floating Satellite / Vector Switcher Toggle Pill Overlay */}
-        <div style={{
+        <div className="map-type-toggle" style={{
           position: 'absolute', top: '1.25rem', left: '50%', transform: 'translateX(-50%)', zIndex: 12,
           background: 'rgba(8, 9, 12, 0.75)', border: '1px solid rgba(255, 255, 255, 0.08)',
           borderRadius: '999px', padding: '3px', display: 'flex', gap: '2px',
@@ -1463,7 +1464,7 @@ Formulate a concise 2-3 sentence analysis of logistical opportunities, zoning de
 
         {/* 3. Slide-in Geospatial Inspector Panel */}
         {selectedItem && (
-          <div style={{
+          <div className="project-map-inspector" style={{
             position: 'absolute',
             top: 0,
             right: 0,

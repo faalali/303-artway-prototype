@@ -2412,6 +2412,91 @@ select.form-input optgroup {
     justify-content: space-between;
     align-items: center;
   }
+
+  /* Map Geospatial Platform Responsive Overrides */
+  .project-map-container {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+    min-height: 800px;
+    gap: 0 !important;
+  }
+
+  .project-map-sidebar {
+    border-right: none !important;
+    border-top: 1px solid var(--border-subtle) !important;
+    height: 350px !important;
+    order: 2 !important; /* Move sidebar below map canvas */
+  }
+
+  .project-map-canvas-wrapper {
+    height: 480px !important;
+    order: 1 !important; /* Move map canvas to top */
+  }
+
+  .map-title-overlay {
+    top: 0.5rem !important;
+    left: 0.5rem !important;
+    padding: 0.5rem 0.75rem !important;
+    max-width: calc(100% - 1rem) !important;
+  }
+
+  .map-title-overlay h3 {
+    font-size: 0.8rem !important;
+  }
+
+  .map-title-overlay span {
+    display: none !important; /* Hide description to prevent crowding */
+  }
+
+  .map-sandbox-warning {
+    top: 3.5rem !important;
+    font-size: 0.65rem !important;
+    padding: 0.35rem 0.65rem !important;
+    max-width: 90% !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .map-back-btn {
+    top: 0.5rem !important;
+    right: 0.5rem !important;
+    padding: 0.35rem 0.65rem !important;
+    font-size: 0.7rem !important;
+  }
+
+  .map-type-toggle {
+    top: auto !important;
+    bottom: 5rem !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: max-content !important;
+    max-width: 95% !important;
+  }
+
+  .map-type-toggle button {
+    padding: 0.3rem 0.65rem !important;
+    font-size: 0.65rem !important;
+  }
+
+  /* Geospatial detail inspector bottom sheet */
+  .project-map-inspector {
+    width: 100% !important;
+    height: 60% !important;
+    top: auto !important;
+    bottom: 0 !important;
+    border-left: none !important;
+    border-top: 1px solid var(--border-subtle) !important;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.6) !important;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 1.25rem !important;
+    gap: 1rem !important;
+  }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 
