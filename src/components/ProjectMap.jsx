@@ -613,6 +613,7 @@ Formulate a concise 2-3 sentence analysis of logistical opportunities, zoning de
         strictBounds: false
       },
       styles: MAP_STYLES,
+      mapTypeId: 'hybrid',
       disableDefaultUI: true,
       zoomControl: true,
       mapTypeControl: false,
